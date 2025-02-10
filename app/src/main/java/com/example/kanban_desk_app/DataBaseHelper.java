@@ -130,4 +130,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.rawQuery("SELECT * FROM " + TABLE_TASKS + " WHERE " + COLUMN_TASK_BOARD_ID + "=?", new String[]{String.valueOf(boardId)});
     }
+
+    public void addBoard(String name, String description) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("board_name", name); // Название столбца для имени доски
+        contentValues.put("board_description", description); // Название столбца для описания доски
+        db.insert(TABLE_BOARDS, null, contentValues);
+        db.close();
+    }
+
 }
