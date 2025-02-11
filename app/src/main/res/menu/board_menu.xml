@@ -1,0 +1,8 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_add_task"
+        android:title="Добавить задание" />
+    <item
+        android:id="@+id/action_delete_board"
+        android:title="Удалить доску" />
+</menu>

@@ -57,9 +57,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     // Методы для работы с таблицей досок
     public void addBoard(String name) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_BOARD_NAME, name);
-        db.insert(TABLE_BOARDS, null, values);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(COLUMN_BOARD_NAME, name); // только имя доски
+        db.insert(TABLE_BOARDS, null, contentValues);
         db.close();
     }
 

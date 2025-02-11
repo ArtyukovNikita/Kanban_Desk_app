@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,22 +37,47 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
             int boardNameIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_BOARD_NAME);
             int boardIdIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_BOARD_ID);
 
-            if (boardNameIndex != -1 && boardIdIndex != -1) { // Проверка на корректность индекса
+            if (boardNameIndex != -1 && boardIdIndex != -1) {
                 String boardName = cursor.getString(boardNameIndex);
                 holder.boardNameTextView.setText(boardName);
 
-                int boardId = cursor.getInt(boardIdIndex);
-
-                // Получение задач для текущей доски
-                Cursor tasksCursor = dbHelper.getTasksByBoardId(boardId);
-                TasksAdapter tasksAdapter = new TasksAdapter(context, tasksCursor);
-                holder.tasksRecyclerView.setAdapter(tasksAdapter);
-            } else {
-                // Обработка случая, когда имя столбца не найдено
-                Log.e("BoardsAdapter", "Column index not found for BOARD_NAME or BOARD_ID");
+                // Установка обработчика для кнопки "три точки"
+             // ImageButton myButton = holder.itemView.findViewById(R.id.my_button); // Замените на ваш ID кнопки
+                holder.btn_menu.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        showMenu(view, cursor.getInt(boardIdIndex)); // Вызов метода showMenu
+                    }
+                });
             }
         }
     }
+
+
+    // Добавляем метод showMenu
+    private void showMenu(View view, int boardId) {
+        PopupMenu popupMenu = new PopupMenu(context, view);
+        popupMenu.getMenuInflater().inflate(R.menu.board_menu, popupMenu.getMenu());
+
+        popupMenu.setOnMenuItemClickListener(menuItem -> {
+            // Заменяем switch на if...else if
+            if (menuItem.getItemId() == R.id.action_add_task) {
+                // Открыть диалог для добавления задачи
+                return true;
+            } else if (menuItem.getItemId() == R.id.action_delete_board) {
+                // Удалить доску
+                dbHelper.deleteBoard(boardId);
+                ((MainActivity) context).deleteBoard(boardId); // Вызов метода из MainActivity
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        popupMenu.show(); // Показать меню
+    }
+
+
 
 
     @Override
@@ -61,12 +88,14 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView boardNameTextView;
         RecyclerView tasksRecyclerView;
+        ImageButton btn_menu;
 
         public ViewHolder(View itemView) {
             super(itemView);
             boardNameTextView = itemView.findViewById(R.id.text_view_board_name);
             tasksRecyclerView = itemView.findViewById(R.id.recyclerView_tasks);
             tasksRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+            btn_menu = itemView.findViewById(R.id.btn_menu); // Убедитесь, что идентификатор правильный
         }
     }
 }

@@ -43,29 +43,26 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Добавить доску");
 
-        // Настройка полей ввода
+        // Поле ввода для названия доски
         final EditText inputName = new EditText(this);
-        final EditText inputDescription = new EditText(this);
         inputName.setHint("Название доски");
-        inputDescription.setHint("Описание доски");
 
         // Создание компоновки для диалога
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.addView(inputName);
-        layout.addView(inputDescription);
         builder.setView(layout);
 
         builder.setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String name = inputName.getText().toString().trim();
-                // Здесь также можно добавить проверку на пустое название
+                // Проверка на пустое название
                 if (name.isEmpty()) {
                     Toast.makeText(MainActivity.this, "Название доски не может быть пустым", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                addBoard(name, inputDescription.getText().toString().trim()); // Метод для добавления доски
+                addBoard(name); // Добавляем доску в базу данных
             }
         });
 
@@ -79,9 +76,10 @@ public class MainActivity extends AppCompatActivity {
         builder.show(); // Показать диалог
     }
 
-    private void addBoard(String name, String description) {
+
+    private void addBoard(String name) {
         // Вставка в базу данных
-        dbHelper.addBoard(name, description); // ваш метод для добавления в базу
+        dbHelper.addBoard(name); // ваш метод для добавления в базу
         loadBoards(); // Обновить отображение досок
     }
 
@@ -95,4 +93,10 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Нет доступных досок", Toast.LENGTH_SHORT).show();
         }
     }
+    public void deleteBoard(int boardId) {
+        dbHelper.deleteBoard(boardId); // Ваш метод для удаления доски
+        loadBoards(); // Обновление списка досок
+    }
+
+
 }

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Kanban_Desk_app</string>
+    <string name="Menu">Меню</string>
 </resources>
