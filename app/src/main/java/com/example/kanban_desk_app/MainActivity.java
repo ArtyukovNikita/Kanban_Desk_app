@@ -3,6 +3,7 @@ package com.example.kanban_desk_app;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,6 +13,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.widget.LinearLayout;
+import android.app.DatePickerDialog;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -98,5 +101,83 @@ public class MainActivity extends AppCompatActivity {
         loadBoards(); // Обновление списка досок
     }
 
+    public void showAddTaskDialog(int boardId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Добавить задание");
 
+        // Поля ввода
+        final EditText inputName = new EditText(this);
+        inputName.setHint("Название задания");
+
+        final EditText inputDescription = new EditText(this);
+        inputDescription.setHint("Описание задания");
+
+        final EditText inputDate = new EditText(this);
+        inputDate.setHint("Дата задания (дд.мм.гггг)");
+
+        // Установка клика для выбора даты
+        inputDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDatePickerDialog(inputDate);
+            }
+        });
+
+        // Создание компоновки для диалога
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.addView(inputName);
+        layout.addView(inputDescription);
+        layout.addView(inputDate);
+        builder.setView(layout);
+
+        // Кнопка "Добавить"
+        builder.setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String name = inputName.getText().toString().trim();
+                String description = inputDescription.getText().toString().trim();
+                String date = inputDate.getText().toString().trim();
+
+                // Проверка на пустые значения
+                if (name.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Название задания не может быть пустым", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                // Добавление задания в базу данных
+                dbHelper.addTask(boardId, name, description, date); // Метод добавления задания
+            }
+        });
+
+        // Кнопка "Отмена"
+        builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel(); // Закрыть диалог
+            }
+        });
+
+        builder.show(); // Показать диалог
+    }
+
+    // Метод для отображения выбора даты
+    private void showDatePickerDialog(final EditText inputDate) {
+        // Получаем текущую дату
+        final Calendar c = Calendar.getInstance();
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        int month = c.get(Calendar.MONTH);
+        int year = c.get(Calendar.YEAR);
+
+        // Создаем DatePickerDialog
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
+                        // Устанавливаем выбранную дату в поле ввода
+                        inputDate.setText(String.format("%02d.%02d.%04d", selectedDay, selectedMonth + 1, selectedYear));
+                    }
+                }, year, month, day);
+
+        datePickerDialog.show(); // Показываем DatePickerDialog
+    }
 }

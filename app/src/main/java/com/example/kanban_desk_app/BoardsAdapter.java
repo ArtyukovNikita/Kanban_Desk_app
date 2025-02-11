@@ -63,6 +63,7 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
             // Заменяем switch на if...else if
             if (menuItem.getItemId() == R.id.action_add_task) {
                 // Открыть диалог для добавления задачи
+                ((MainActivity) context).showAddTaskDialog(boardId);
                 return true;
             } else if (menuItem.getItemId() == R.id.action_delete_board) {
                 // Удалить доску
