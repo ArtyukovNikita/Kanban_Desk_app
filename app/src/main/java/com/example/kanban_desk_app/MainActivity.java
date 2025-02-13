@@ -146,8 +146,17 @@ public class MainActivity extends AppCompatActivity {
                 }
                 // Добавление задания в базу данных
                 dbHelper.addTask(boardId, name, description, date); // Метод добавления задания
+
+                // Получение новых задач для данной доски
+                Cursor newTasksCursor = dbHelper.getTasksByBoardId(boardId);
+                BoardsAdapter boardsAdapter = (BoardsAdapter) boardsRecyclerView.getAdapter();
+                if (boardsAdapter != null) {
+                    // Обновляем адаптер с новыми задачами
+                    boardsAdapter.updateTasks(newTasksCursor);
+                }
             }
         });
+
 
         // Кнопка "Отмена"
         builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
@@ -159,6 +168,30 @@ public class MainActivity extends AppCompatActivity {
 
         builder.show(); // Показать диалог
     }
+
+    private void updateTasksForBoard(int boardId) {
+        // Получаем обновленный курсор задач для текущей доски
+        Cursor newTasksCursor = dbHelper.getTasksByBoardId(boardId);
+
+        // Получаем адаптер для досок
+        BoardsAdapter boardsAdapter = (BoardsAdapter) boardsRecyclerView.getAdapter();
+        if (boardsAdapter != null) {
+            for (int i = 0; i < boardsAdapter.getItemCount(); i++) {
+                if (boardsAdapter.isActiveBoardAtPosition(i, boardId)) { // Метод для получения активной доски
+                    // Здесь мы используем правильный ViewHolder, который создан в BoardsAdapter
+                    BoardsAdapter.ViewHolder holder = (BoardsAdapter.ViewHolder) boardsRecyclerView.findViewHolderForAdapterPosition(i);
+                    if (holder != null) {
+                        // Указываем новый адаптер задач для tasksRecyclerView
+                        TasksAdapter tasksAdapter = new TasksAdapter(this, newTasksCursor);
+                        holder.tasksRecyclerView.setAdapter(tasksAdapter);
+                    }
+                }
+            }
+        }
+    }
+
+
+
 
     // Метод для отображения выбора даты
     private void showDatePickerDialog(final EditText inputDate) {

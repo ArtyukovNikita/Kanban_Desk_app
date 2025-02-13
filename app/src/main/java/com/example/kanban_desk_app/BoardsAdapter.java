@@ -39,6 +39,7 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
 
             if (boardNameIndex != -1 && boardIdIndex != -1) {
                 String boardName = cursor.getString(boardNameIndex);
+                int boardId = cursor.getInt(boardIdIndex);
                 holder.boardNameTextView.setText(boardName);
 
                 // Установка обработчика для кнопки "три точки"
@@ -49,6 +50,11 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
                         showMenu(view, cursor.getInt(boardIdIndex)); // Вызов метода showMenu
                     }
                 });
+
+                // Получение задач для текущей доски
+                Cursor tasksCursor = dbHelper.getTasksByBoardId(boardId);
+                TasksAdapter tasksAdapter = new TasksAdapter(context, tasksCursor);
+                holder.tasksRecyclerView.setAdapter(tasksAdapter);
             }
         }
     }
@@ -99,5 +105,21 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
             btn_menu = itemView.findViewById(R.id.btn_menu); // Убедитесь, что идентификатор правильный
         }
     }
+    public void updateTasks(Cursor tasksCursor) {
+        this.cursor = tasksCursor;
+        notifyDataSetChanged();
+    }
+
+    public boolean isActiveBoardAtPosition(int position, int boardId) {
+        if (cursor.moveToPosition(position)) {
+            int currentBoardIdIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_BOARD_ID);
+            if (currentBoardIdIndex != -1) {
+                int currentBoardId = cursor.getInt(currentBoardIdIndex);
+                return currentBoardId == boardId;
+            }
+        }
+        return false;
+    }
+
 }
 
