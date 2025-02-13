@@ -44,7 +44,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
                 holder.taskDateTextView.setText(taskDate);
             } else {
                 Log.e("TasksAdapter", "Column index not found for TASK_NAME, TASK_DESCRIPTION or TASK_DATE");
-                // Можно установить текст по умолчанию в TextView или обработать ошибку
+                // Установка текста по умолчанию в TextView
                 holder.taskNameTextView.setText("Неизвестная задача");
                 holder.taskDescriptionTextView.setText("Нет описания");
                 holder.taskDateTextView.setText("Неизвестная дата");
@@ -52,10 +52,13 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         }
     }
 
-
     @Override
     public int getItemCount() {
         return cursor.getCount();
+    }
+
+    public Cursor getCursor() {
+        return cursor; // Возвращаем текущий курсор
     }
 
     public static class TaskViewHolder extends RecyclerView.ViewHolder {

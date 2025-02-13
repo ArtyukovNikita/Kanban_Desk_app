@@ -144,19 +144,14 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "Название задания не может быть пустым", Toast.LENGTH_SHORT).show();
                     return;
                 }
+
                 // Добавление задания в базу данных
                 dbHelper.addTask(boardId, name, description, date); // Метод добавления задания
 
-                // Получение новых задач для данной доски
-                Cursor newTasksCursor = dbHelper.getTasksByBoardId(boardId);
-                BoardsAdapter boardsAdapter = (BoardsAdapter) boardsRecyclerView.getAdapter();
-                if (boardsAdapter != null) {
-                    // Обновляем адаптер с новыми задачами
-                    boardsAdapter.updateTasks(newTasksCursor);
-                }
+                // Обновление задач для текущей доски
+                updateTasksForBoard(boardId);
             }
         });
-
 
         // Кнопка "Отмена"
         builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
@@ -170,18 +165,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateTasksForBoard(int boardId) {
-        // Получаем обновленный курсор задач для текущей доски
+        // Получение курсора задач для текущей доски
         Cursor newTasksCursor = dbHelper.getTasksByBoardId(boardId);
 
         // Получаем адаптер для досок
         BoardsAdapter boardsAdapter = (BoardsAdapter) boardsRecyclerView.getAdapter();
         if (boardsAdapter != null) {
             for (int i = 0; i < boardsAdapter.getItemCount(); i++) {
-                if (boardsAdapter.isActiveBoardAtPosition(i, boardId)) { // Метод для получения активной доски
-                    // Здесь мы используем правильный ViewHolder, который создан в BoardsAdapter
+                if (boardsAdapter.isActiveBoardAtPosition(i, boardId)) {
                     BoardsAdapter.ViewHolder holder = (BoardsAdapter.ViewHolder) boardsRecyclerView.findViewHolderForAdapterPosition(i);
                     if (holder != null) {
-                        // Указываем новый адаптер задач для tasksRecyclerView
+                        // Закрываем старый курсор, если он существует
+                        if (holder.tasksRecyclerView.getAdapter() != null) {
+                            TasksAdapter currentAdapter = (TasksAdapter) holder.tasksRecyclerView.getAdapter();
+                            if (currentAdapter != null) {
+                                Cursor oldCursor = currentAdapter.getCursor(); // Получаем текущий курсор
+                                if (oldCursor != null && !oldCursor.isClosed()) {
+                                    oldCursor.close(); // Закрываем старый курсор, если он не закрыт
+                                }
+                            }
+                        }
+
+                        // Устанавливаем новый адаптер задач
                         TasksAdapter tasksAdapter = new TasksAdapter(this, newTasksCursor);
                         holder.tasksRecyclerView.setAdapter(tasksAdapter);
                     }
@@ -189,6 +194,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 
 
 
