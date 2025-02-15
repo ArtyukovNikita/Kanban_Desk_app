@@ -156,6 +156,21 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
             }
         });
 
+        // Кнопка "Удалить"
+        builder.setNeutralButton("Удалить", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Логика удаления задания
+                dbHelper.deleteTask(taskId); // Вызов метода удаления задания
+                Cursor newCursor = dbHelper.getTasksByBoardId(currentBoardId); // Обновляем курсор после удаления
+                if (newCursor != null) {
+                    cursor = newCursor; // Обновляем курсор в адаптере
+                    notifyDataSetChanged(); // Уведомляем адаптер о необходимости обновления
+                }
+                Toast.makeText(context, "Задание удалено", Toast.LENGTH_SHORT).show(); // Уведомление о удалении
+            }
+        });
+
         builder.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
