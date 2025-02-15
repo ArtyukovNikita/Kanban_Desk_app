@@ -2,6 +2,7 @@ package com.example.kanban_desk_app;
 
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -102,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showAddTaskDialog(int boardId) {
+        Log.d("MainActivity", "boardId в showAddTaskDialog: " + boardId);
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Добавить задание");
 

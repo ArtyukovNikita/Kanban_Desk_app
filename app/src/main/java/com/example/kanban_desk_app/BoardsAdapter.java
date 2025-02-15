@@ -47,7 +47,8 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
                 holder.btn_menu.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        showMenu(view, cursor.getInt(boardIdIndex)); // Вызов метода showMenu
+                        //showMenu(view, cursor.getInt(boardIdIndex)); // Вызов метода showMenu
+                        showMenu(view, boardId);
                     }
                 });
 
@@ -66,13 +67,13 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
         popupMenu.getMenuInflater().inflate(R.menu.board_menu, popupMenu.getMenu());
 
         popupMenu.setOnMenuItemClickListener(menuItem -> {
-            // Заменяем switch на if...else if
             if (menuItem.getItemId() == R.id.action_add_task) {
-                // Открыть диалог для добавления задачи
+                // Передаем boardId в метод добавления задания
+
+                Log.d("BoardsAdapter", "Передан boardId для добавления задания: " + boardId);
                 ((MainActivity) context).showAddTaskDialog(boardId);
                 return true;
             } else if (menuItem.getItemId() == R.id.action_delete_board) {
-                // Удалить доску
                 dbHelper.deleteBoard(boardId);
                 ((MainActivity) context).deleteBoard(boardId); // Вызов метода из MainActivity
                 return true;
@@ -83,6 +84,7 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
 
         popupMenu.show(); // Показать меню
     }
+
 
 
 

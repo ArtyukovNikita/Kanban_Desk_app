@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DataBaseHelper extends SQLiteOpenHelper {
 
@@ -77,8 +78,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+
     // Методы для работы с таблицей заданий
     public void addTask(int boardId, String taskName, String taskDescription, String taskDate) {
+        //Log.d("AddTask", "Добавление задания к доске с ID: " + boardId);
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_TASK_BOARD_ID, boardId);
