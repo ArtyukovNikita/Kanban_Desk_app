@@ -22,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
     private DataBaseHelper dbHelper;
     private RecyclerView boardsRecyclerView;
     private BoardsAdapter boardsAdapter;
+    private TasksAdapter tasksAdapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         dbHelper = new DataBaseHelper(this);
+
         boardsRecyclerView = findViewById(R.id.recyclerView_boards);
         boardsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -190,7 +193,9 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         // Устанавливаем новый адаптер задач
-                        TasksAdapter tasksAdapter = new TasksAdapter(this, newTasksCursor);
+                        TasksAdapter tasksAdapter = new TasksAdapter(this, newTasksCursor, dbHelper); //надеюсь будет работать эта
+                        //RecyclerView recyclerView = findViewById(R.id.recycler_view);                //(this, newTasksCursor, dbHelper) конструкция
+                        //recyclerView.setLayoutManager(new LinearLayoutManager(this));
                         holder.tasksRecyclerView.setAdapter(tasksAdapter);
                     }
                 }

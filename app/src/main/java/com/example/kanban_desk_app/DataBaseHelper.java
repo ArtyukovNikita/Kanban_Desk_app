@@ -143,4 +143,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    public Cursor getAllTasks() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_TASKS, null, null, null, null, null, null);
+    }
+
 }

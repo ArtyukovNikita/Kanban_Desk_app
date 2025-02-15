@@ -54,7 +54,7 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
 
                 // Получение задач для текущей доски
                 Cursor tasksCursor = dbHelper.getTasksByBoardId(boardId);
-                TasksAdapter tasksAdapter = new TasksAdapter(context, tasksCursor);
+                TasksAdapter tasksAdapter = new TasksAdapter(context, tasksCursor, dbHelper);
                 holder.tasksRecyclerView.setAdapter(tasksAdapter);
             }
         }
