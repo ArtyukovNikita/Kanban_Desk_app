@@ -193,10 +193,11 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         // Устанавливаем новый адаптер задач
-                        TasksAdapter tasksAdapter = new TasksAdapter(this, newTasksCursor, dbHelper); //надеюсь будет работать эта
+                        TasksAdapter tasksAdapter = new TasksAdapter(this, newTasksCursor, dbHelper, boardId); //надеюсь будет работать эта
                         //RecyclerView recyclerView = findViewById(R.id.recycler_view);                //(this, newTasksCursor, dbHelper) конструкция
                         //recyclerView.setLayoutManager(new LinearLayoutManager(this));
                         holder.tasksRecyclerView.setAdapter(tasksAdapter);
+
                     }
                 }
             }

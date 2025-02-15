@@ -1,6 +1,7 @@
 package com.example.kanban_desk_app;
 
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
@@ -8,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -16,15 +18,20 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.Calendar;
+
 public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHolder> {
     private Context context;
     private Cursor cursor;
     private DataBaseHelper dbHelper;
+    private int currentBoardId; // Добавляем поле для хранения ID доски
 
-    public TasksAdapter(Context context, Cursor cursor, DataBaseHelper dbHelper) {
+
+    public TasksAdapter(Context context, Cursor cursor, DataBaseHelper dbHelper, int currentBoardId) {
         this.context = context;
         this.cursor = cursor;
         this.dbHelper = dbHelper; // Инициализация
+        this.currentBoardId = currentBoardId; // Инициализация ID доски
     }
 
     @NonNull
@@ -69,6 +76,26 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         }
     }
 
+    public void editTask(int taskId, String newName, String newDescription, String newDate) {
+        // Проверяем, не является ли новое имя пустым
+        if (!newName.isEmpty()) {
+            // Обновляем данные задания в базе данных
+            dbHelper.updateTaskName(taskId, newName);
+            dbHelper.updateTaskDescription(taskId, newDescription);
+            dbHelper.updateTaskDate(taskId, newDate);
+
+            // Запрашиваем обновленные данные из базы данных
+            Cursor newCursor = dbHelper.getTasksByBoardId(currentBoardId); // Получаем задания для доски по ID
+            this.cursor = newCursor; // Обновляем курсор адаптера
+
+            // Уведомляем адаптер о необходимости обновления данных
+            notifyDataSetChanged();
+        } else {
+            // Если название пустое, показываем уведомление
+            Toast.makeText(context, "Название задания не может быть пустым", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void showEditTaskDialog(int taskId, String currentName, String currentDescription, String currentDate) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Редактировать задание");
@@ -98,6 +125,14 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         // Устанавливаем компоновку в диалог
         builder.setView(layout);
 
+        inputDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Открываем DatePickerDialog
+                showDatePickerDialog(inputDate);
+            }
+        });
+
         builder.setPositiveButton("Сохранить", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -117,6 +152,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
                 } else {
                     Toast.makeText(context, "Название задания не может быть пустым", Toast.LENGTH_SHORT).show();
                 }
+                editTask(taskId, name, description, date); // currentBoardId - ID доски, к которой относится задание
             }
         });
 
@@ -128,6 +164,27 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         });
 
         builder.show();
+    }
+
+    // Метод для отображения выбора даты
+    private void showDatePickerDialog(final EditText inputDate) {
+        // Получаем текущую дату
+        final Calendar c = Calendar.getInstance();
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        int month = c.get(Calendar.MONTH);
+        int year = c.get(Calendar.YEAR);
+
+        // Создаем DatePickerDialog
+        DatePickerDialog datePickerDialog = new DatePickerDialog(context,
+                new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker view, int selectedYear, int selectedMonth, int selectedDay) {
+                        // Устанавливаем выбранную дату в поле ввода
+                        inputDate.setText(String.format("%02d.%02d.%04d", selectedDay, selectedMonth + 1, selectedYear));
+                    }
+                }, year, month, day);
+
+        datePickerDialog.show(); // Показываем DatePickerDialog
     }
 
     @Override
