@@ -5,8 +5,10 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
@@ -62,9 +64,45 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
                 holder.taskDateTextView.setText(taskDate);
 
                 // Обработка длительного нажатия
-                holder.itemView.setOnLongClickListener(v -> {
-                    showEditTaskDialog(taskId, taskName, taskDescription, taskDate);
-                    return true; // Возвращаем true, если обработано
+                holder.itemView.setOnTouchListener(new View.OnTouchListener() {
+                    private static final int LONG_PRESS_DURATION = 500; // Длительность нажатия в миллисекундах
+                    private Handler handler = new Handler();
+                    private Runnable longPressRunnable;
+                    private boolean isLongPress = false;
+
+
+                    @Override
+                    public boolean onTouch(View v, MotionEvent event) {
+                        switch (event.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+                                // Начать отсчет времени нажатия
+                                isLongPress = false;
+                                handler.postDelayed(() -> {
+                                    isLongPress = true; // Установка флага долгого нажатия
+                                }, LONG_PRESS_DURATION);
+                                return true;
+
+                            case MotionEvent.ACTION_MOVE:
+                                // Если движение, отменяем длительное нажатие
+                                handler.removeCallbacksAndMessages(null);
+                                isLongPress = false;
+                                return true;
+                            case MotionEvent.ACTION_UP:
+                                // Проверяем, было ли длительное нажатие
+                                if (isLongPress) {
+                                    showEditTaskDialog(taskId, taskName, taskDescription, taskDate);
+                                }
+                                // Отмена долгого нажатия
+                                handler.removeCallbacksAndMessages(null);
+                                return true;
+                            case MotionEvent.ACTION_CANCEL:
+                                // Отмена долгого нажатия
+                                handler.removeCallbacksAndMessages(null);
+                                isLongPress = false;
+                                return true;
+                        }
+                        return false;
+                    }
                 });
             } else {
                 Log.e("TasksAdapter", "Column index not found for TASK_NAME, TASK_DESCRIPTION or TASK_DATE");
