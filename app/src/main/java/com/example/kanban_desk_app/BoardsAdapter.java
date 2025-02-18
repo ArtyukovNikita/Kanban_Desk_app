@@ -1,14 +1,18 @@
 package com.example.kanban_desk_app;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -68,8 +72,6 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
 
         popupMenu.setOnMenuItemClickListener(menuItem -> {
             if (menuItem.getItemId() == R.id.action_add_task) {
-                // Передаем boardId в метод добавления задания
-
                 Log.d("BoardsAdapter", "Передан boardId для добавления задания: " + boardId);
                 ((MainActivity) context).showAddTaskDialog(boardId);
                 return true;
@@ -77,17 +79,48 @@ public class BoardsAdapter extends RecyclerView.Adapter<BoardsAdapter.ViewHolder
                 dbHelper.deleteBoard(boardId);
                 ((MainActivity) context).deleteBoard(boardId); // Вызов метода из MainActivity
                 return true;
+            } else if (menuItem.getItemId() == R.id.action_edit_board) {
+                // Получаем текущее имя доски и запускаем диалог редактирования
+                String currentName = getCurrentBoardName(boardId);
+                if (currentName != null) { // Проверяем, что имя доски найдено
+                    ((MainActivity) context).showEditBoardDialog(boardId, currentName);
+                }
+                return true;
             } else {
-                return false;
+                return false; // В случае, если ничего не выбрано
             }
         });
 
         popupMenu.show(); // Показать меню
     }
 
+    private String getCurrentBoardName(int boardId) {
+        Cursor cursor = dbHelper.getAllBoards();
+        String boardName = null; // Хранит имя доски
 
+        // Определите индексы до начала цикла
+        int boardIdIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_BOARD_ID);
+        int boardNameIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_BOARD_NAME);
 
+        // Проверяем, что индексы действительны
+        if (boardIdIndex == -1 || boardNameIndex == -1) {
+            Log.e("BoardsAdapter", "Column index not found for BOARD_ID or BOARD_NAME");
+            cursor.close();
+            return null; // Или выбросьте исключение, если это критично
+        }
 
+        while (cursor.moveToNext()) {
+            int id = cursor.getInt(boardIdIndex);
+
+            if (id == boardId) {
+                boardName = cursor.getString(boardNameIndex);
+                break; // Найдено имя доски, выходим из цикла
+            }
+        }
+
+        cursor.close(); // Закрываем курсор
+        return boardName; // Возвращаем имя (или null, если не найдено)
+    }
 
     @Override
     public int getItemCount() {

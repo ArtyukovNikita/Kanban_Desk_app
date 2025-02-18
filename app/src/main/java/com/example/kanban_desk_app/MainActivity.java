@@ -228,4 +228,34 @@ public class MainActivity extends AppCompatActivity {
 
         datePickerDialog.show(); // Показываем DatePickerDialog
     }
+
+    public void showEditBoardDialog(int boardId, String currentName) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Редактировать доску");
+
+        // Поле для редактирования имени доски
+        final EditText inputName = new EditText(this);
+        inputName.setHint("Название доски");
+        inputName.setText(currentName); // Устанавливаем текущее имя доски
+
+        builder.setView(inputName);
+
+        builder.setPositiveButton("Сохранить", (dialog, which) -> {
+            String newName = inputName.getText().toString().trim();
+            if (!newName.isEmpty()) {
+                updateBoardName(boardId, newName);
+            } else {
+                Toast.makeText(MainActivity.this, "Название доски не может быть пустым", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setNegativeButton("Отмена", (dialog, which) -> dialog.cancel());
+
+        builder.show();
+    }
+
+    private void updateBoardName(int boardId, String newName) {
+        dbHelper.updateBoardName(boardId, newName);
+        loadBoards(); // Обновить отображение досок после изменения
+    }
 }

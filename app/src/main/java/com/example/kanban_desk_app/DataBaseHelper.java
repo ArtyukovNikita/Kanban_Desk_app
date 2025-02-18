@@ -10,7 +10,7 @@ import android.util.Log;
 public class DataBaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "kanban.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Таблица досок
     public static final String TABLE_BOARDS = "boards";
@@ -24,6 +24,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_TASK_NAME = "task_name";
     public static final String COLUMN_TASK_DESCRIPTION = "task_description";
     public static final String COLUMN_TASK_DATE = "task_date";
+    public static final String COLUMN_TASK_COMPLETED = "task_completed";
+
 
     public DataBaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -44,6 +46,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 COLUMN_TASK_NAME + " TEXT NOT NULL, " +
                 COLUMN_TASK_DESCRIPTION + " TEXT, " +
                 COLUMN_TASK_DATE + " TEXT, " +
+                COLUMN_TASK_COMPLETED + " INTEGER DEFAULT 0, " +
                 "FOREIGN KEY(" + COLUMN_TASK_BOARD_ID + ") REFERENCES " + TABLE_BOARDS + "(" + COLUMN_BOARD_ID + "))";
         db.execSQL(createTasksTable);
     }
@@ -148,4 +151,19 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return db.query(TABLE_TASKS, null, null, null, null, null, null);
     }
 
+    public void updateTaskCompletion(int taskId, int completed) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_TASK_COMPLETED, completed);
+        db.update(TABLE_TASKS, values, COLUMN_TASK_ID + "=?", new String[]{String.valueOf(taskId)});
+        db.close();
+    }
+
+    public void updateTaskCompleted(int taskId, int completed) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_TASK_COMPLETED, completed);
+        db.update(TABLE_TASKS, values, COLUMN_TASK_ID + "=?", new String[]{String.valueOf(taskId)});
+        db.close();
+    }
 }
