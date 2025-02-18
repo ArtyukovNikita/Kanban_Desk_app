@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -50,7 +52,14 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
             int taskDescriptionIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_TASK_DESCRIPTION);
             int taskDateIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_TASK_DATE);
             int taskIdIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_TASK_ID); // Не забудьте об идентификаторе задания
+            int taskCompletedIndex = cursor.getColumnIndex(DataBaseHelper.COLUMN_TASK_COMPLETED);
 
+            if (taskCompletedIndex != -1) {
+                holder.taskCompletedCheckbox.setChecked(cursor.getInt(taskCompletedIndex) == 1);
+            } else {
+                // Обработка ошибки: столбец не найден
+                Log.e("TasksAdapter", "COLUMN_TASK_COMPLETED not found in cursor.");
+            }
 
             if (taskNameIndex != -1 && taskDescriptionIndex != -1 && taskDateIndex != -1) {
                 String taskName = cursor.getString(taskNameIndex);
@@ -62,47 +71,19 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
                 holder.taskNameTextView.setText(taskName);
                 holder.taskDescriptionTextView.setText(taskDescription);
                 holder.taskDateTextView.setText(taskDate);
-
-                // Обработка длительного нажатия
-                holder.itemView.setOnTouchListener(new View.OnTouchListener() {
-                    private static final int LONG_PRESS_DURATION = 500; // Длительность нажатия в миллисекундах
-                    private Handler handler = new Handler();
-                    private Runnable longPressRunnable;
-                    private boolean isLongPress = false;
+                holder.taskCompletedCheckbox.setChecked(taskCompletedIndex != -1 && cursor.getInt(taskCompletedIndex) == 1);
 
 
-                    @Override
-                    public boolean onTouch(View v, MotionEvent event) {
-                        switch (event.getAction()) {
-                            case MotionEvent.ACTION_DOWN:
-                                // Начать отсчет времени нажатия
-                                isLongPress = false;
-                                handler.postDelayed(() -> {
-                                    isLongPress = true; // Установка флага долгого нажатия
-                                }, LONG_PRESS_DURATION);
-                                return true;
-
-                            case MotionEvent.ACTION_MOVE:
-                                // Если движение, отменяем длительное нажатие
-                                handler.removeCallbacksAndMessages(null);
-                                isLongPress = false;
-                                return true;
-                            case MotionEvent.ACTION_UP:
-                                // Проверяем, было ли длительное нажатие
-                                if (isLongPress) {
-                                    showEditTaskDialog(taskId, taskName, taskDescription, taskDate);
-                                }
-                                // Отмена долгого нажатия
-                                handler.removeCallbacksAndMessages(null);
-                                return true;
-                            case MotionEvent.ACTION_CANCEL:
-                                // Отмена долгого нажатия
-                                handler.removeCallbacksAndMessages(null);
-                                isLongPress = false;
-                                return true;
-                        }
-                        return false;
-                    }
+                holder.taskCompletedCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                    // Избегаем вызова notifyItemChanged() напрямую
+                    // Вместо этого создаем Handler для отложенного обновления состояния
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        // Изменяем состояние в базе данных
+                        dbHelper.updateTaskCompletion(taskId, isChecked ? 1 : 0);
+                    });
+                });
+                holder.itemView.setOnClickListener(v -> {
+                    showEditTaskDialog(taskId, taskName, taskDescription, taskDate);
                 });
             } else {
                 Log.e("TasksAdapter", "Column index not found for TASK_NAME, TASK_DESCRIPTION or TASK_DATE");
@@ -253,12 +234,16 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         TextView taskNameTextView;
         TextView taskDescriptionTextView;
         TextView taskDateTextView;
+        CheckBox taskCompletedCheckbox;
 
         public TaskViewHolder(View itemView) {
             super(itemView);
             taskNameTextView = itemView.findViewById(R.id.text_view_task_name);
             taskDescriptionTextView = itemView.findViewById(R.id.text_view_task_description);
             taskDateTextView = itemView.findViewById(R.id.text_view_task_date);
+            taskCompletedCheckbox = itemView.findViewById(R.id.task_completed_checkbox);
+            //holder.taskCompletedCheckbox.setChecked(cursor.getInt(cursor.getColumnIndex(DataBaseHelper.COLUMN_TASK_COMPLETED)) == 1);
+
         }
     }
 }
